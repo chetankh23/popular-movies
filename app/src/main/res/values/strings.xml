@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="popular">Popular</string>
+    <string name="top_rated">Top Rated</string>
+    <string name="movie_detail">Movie Detail</string>
+    <string name="api_popular">popular</string>
+    <string name="api_top_rated">top_rated</string>
+    <string name="extra_movie_detail">EXTRA_MOVIE_DETAIL</string>
+    <string name="out_of_rating">/10</string>
+</resources>
