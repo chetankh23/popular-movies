@@ -1,20 +1,14 @@
 package com.project.popularmovies;
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.support.annotation.ColorRes;
 import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.project.popularmovies.interfaces.ResponseHandler;
@@ -50,7 +44,7 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_detail2);
+        setContentView(R.layout.activity_movie_detail);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
