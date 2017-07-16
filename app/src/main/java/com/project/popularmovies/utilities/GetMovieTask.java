@@ -11,20 +11,12 @@ import java.net.URL;
 
 public class GetMovieTask extends AsyncTask<URL, Void, String> {
 
-    private final ProgressBar mLoadingIndicator;
     private ResponseHandler mResponseHandler;
+    private String mType;
 
-    public GetMovieTask(ProgressBar loadingIndicator, ResponseHandler responseHandler) {
+    public GetMovieTask(ResponseHandler responseHandler, String type) {
         mResponseHandler = responseHandler;
-        mLoadingIndicator = loadingIndicator;
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        if(mLoadingIndicator != null) {
-            mLoadingIndicator.setVisibility(View.VISIBLE);
-        }
+        mType = type;
     }
 
     @Override
@@ -42,8 +34,7 @@ public class GetMovieTask extends AsyncTask<URL, Void, String> {
     @Override
     protected void onPostExecute(String s) {
         if(s != null && !s.equals("")) {
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
-            mResponseHandler.handleResponse(s);
+            mResponseHandler.handleResponse(s, mType);
         }
     }
 }

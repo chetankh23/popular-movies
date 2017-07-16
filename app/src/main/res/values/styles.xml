@@ -9,4 +9,31 @@
         <item name="overlapAnchor">false</item>
     </style>
 
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="exp_toolbar_title" parent="@android:style/TextAppearance.Holo.Medium">
+        <item name="android:textSize">26sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="coll_toolbar_title" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="tv_movie_title_style">
+        <item name="android:textSize">@dimen/textsize_large</item>
+        <item name="android:typeface">serif</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+
+    <style name="tv_heading_style">
+        <item name="android:textSize">@dimen/textsize_large</item>
+        <item name="android:typeface">monospace</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+    </style>
 </resources>

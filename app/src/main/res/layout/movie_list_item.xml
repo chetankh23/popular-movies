@@ -6,6 +6,6 @@
     <ImageView
         android:id="@+id/iv_item_image"
         android:layout_width="match_parent"
-        android:layout_height="270dp"
+        android:layout_height="@dimen/grid_image_height"
         android:scaleType="fitXY"/>
 </FrameLayout>

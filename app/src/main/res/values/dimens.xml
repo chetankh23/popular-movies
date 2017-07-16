@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="margin_small">4dp</dimen>
+    <dimen name="margin_medium">8dp</dimen>
+    <dimen name="margin_large">12dp</dimen>
+    <dimen name="margin_extra_large">16dp</dimen>
+    
+    <dimen name="textsize_small">12sp</dimen>
+    <dimen name="textsize_medium">14sp</dimen>
+    <dimen name="textsize_large">18sp</dimen>
+    <dimen name="textsize_extra_large">25sp</dimen>
+
+    <dimen name="grid_image_height">260dp</dimen>
+</resources>

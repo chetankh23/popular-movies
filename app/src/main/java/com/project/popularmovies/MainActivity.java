@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements ResponseHandler, 
      */
     private void getMovieList(String choice) {
         URL url = NetworkUtils.buildURL(choice);
-        GetMovieTask movieTask = new GetMovieTask(mLoadingIndicator, this);
+        GetMovieTask movieTask = new GetMovieTask(this, null);
         movieTask.execute(url);
 
     }
@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements ResponseHandler, 
      * @param response Response obtained from the web service call.
      */
     @Override
-    public void handleResponse(String response) {
+    public void handleResponse(String response, String type) {
         movieList = AppUtils.createMovieDataFromResponse(response);
         movieListAdapter.setmMovieList(movieList);
     }
