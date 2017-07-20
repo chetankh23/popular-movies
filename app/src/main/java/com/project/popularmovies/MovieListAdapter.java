@@ -1,14 +1,13 @@
 package com.project.popularmovies;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.project.popularmovies.interfaces.OnMovieItemClickListener;
+import com.project.popularmovies.interfaces.OnItemClickListener;
 import com.project.popularmovies.models.Movie;
 import com.squareup.picasso.Picasso;
 
@@ -27,14 +26,14 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Imag
     private List<Movie> mMovieList;
 
     // An on-click handler that is defined to respond to movie item click.
-    private OnMovieItemClickListener mOnMovieItemClickListener;
+    private OnItemClickListener mOnMovieItemClickListener;
 
     /**
      * Creates a MovieListAdapter
      * @param context Context of the calling Activity.
      * @param movieItemClickListener The onClick handler for this adapter.
      */
-    public MovieListAdapter(Context context, OnMovieItemClickListener movieItemClickListener) {
+    public MovieListAdapter(Context context, OnItemClickListener movieItemClickListener) {
         mContext = context;
         mOnMovieItemClickListener = movieItemClickListener;
         mMovieList = new ArrayList<Movie>();
@@ -63,7 +62,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Imag
     /**
      * This method is called by the RecyclerView to display the data at the specified
      * position. In this method, we update the contents of the ViewHolder to display the
-     * weather details for this particular position.
+     * movie details for this particular position.
      *
      * @param holder The ViewHolder which should be updated to represent the contents of the item
      *               at the given position in the data set.
@@ -113,7 +112,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Imag
         @Override
         public void onClick(View v) {
             int itemClickIndex = getAdapterPosition();
-            mOnMovieItemClickListener.onMovieItemClicked(itemClickIndex);
+            mOnMovieItemClickListener.onItemClicked(itemClickIndex);
         }
     }
 

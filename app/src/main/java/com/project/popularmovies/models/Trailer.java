@@ -1,5 +1,9 @@
 package com.project.popularmovies.models;
 
+/**
+ * The class Trailer includes properties and methods to store the details
+ * of particular movie trailer.
+ */
 public class Trailer {
 
     private String trailerId;

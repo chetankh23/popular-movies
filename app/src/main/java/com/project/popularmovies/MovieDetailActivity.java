@@ -23,7 +23,7 @@ import android.widget.Toast;
 
 import com.project.popularmovies.data.FavoriteContract;
 import com.project.popularmovies.data.FavoritesCursor;
-import com.project.popularmovies.interfaces.OnMovieItemClickListener;
+import com.project.popularmovies.interfaces.OnItemClickListener;
 import com.project.popularmovies.interfaces.ResponseHandler;
 import com.project.popularmovies.models.Movie;
 import com.project.popularmovies.models.Review;
@@ -41,7 +41,7 @@ import java.util.List;
 * The class MovieDetailActivity displays the details of a particular movie when selects
 * one from the movie list.
 */
-public class MovieDetailActivity extends AppCompatActivity implements ResponseHandler, View.OnClickListener, OnMovieItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class MovieDetailActivity extends AppCompatActivity implements ResponseHandler, View.OnClickListener, OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     private Movie mMovieDetail;
     private Toolbar toolbar;
@@ -57,8 +57,13 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
     private RecyclerView reviewListRecyclerView, trailerListRecyclerView;
     private FloatingActionButton shareFab;
 
+    // Backdrop Image Base URL of movie.
     private static final String BACKDROP_BASE_URL = "http://image.tmdb.org/t/p/w780";
+
+    // Poster image URL of movie.
     private static final String MOVIE_IMAGE_BASE_URL = "http://image.tmdb.org/t/p/w185/";
+
+    // Movie trailer Base URL
     private static final String MOVIE_TRAILER_BASE_URI = "https://www.youtube.com/watch?v=";
 
     @Override
@@ -71,13 +76,23 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        // Get intent from calling activity. If the intent is not null, we
+        // extract the details of movie using extras.
         Intent getMovieIntent = getIntent();
         if(getMovieIntent != null) {
+
+            // Get movie detail.
             mMovieDetail = getMovieIntent.getParcelableExtra(getString(R.string.extra_movie_detail));
             if(mMovieDetail != null) {
                 displayMovieDetails();
+
+                // initialize loader to load favorites.
                 getSupportLoaderManager().initLoader(FAVORITES_LOADER_ID, null, this);
+
+                // call to get movie trailers.
                 loadMovieTrailers();
+
+                // call to get movie reviews.
                 loadReviews();
             }
         }
@@ -114,12 +129,16 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
         initReviewList();
     }
 
+    /**
+     * Initializes the requisite UI to display list of trailers. This includes
+     * initializing the RecyclerView, TrailerListAdapter and trailerList.
+     */
     private void initTrailerList() {
 
         trailerList = new ArrayList<Trailer>();
 
-        // The MovieListAdapter is responsible for linking the movie data with the views
-        // that will end up displaying the movie data.
+        // The TrailerListAdapter is responsible for linking the trailer data with the views
+        // that will end up displaying the trailer data.
         trailerListAdapter = new TrailerListAdapter(this, this);
         trailerListRecyclerView = (RecyclerView) findViewById(R.id.rv_trailer_list);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
@@ -128,15 +147,18 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
 
         // Setting the adapter attaches it to the RecyclerView in our layout.
         trailerListRecyclerView.setAdapter(trailerListAdapter);
-
     }
 
+    /**
+     * Initializes the requisite UI to display list of reviews. This includes
+     * initializing the RecyclerView, ReviewListAdapter and reviewList.
+     */
     private void initReviewList() {
 
         reviewList = new ArrayList<Review>();
 
-        // The MovieListAdapter is responsible for linking the movie data with the views
-        // that will end up displaying the movie data.
+        // The ReviewListAdapter is responsible for linking the review data with the views
+        // that will end up displaying the review data.
         reviewListAdapter = new ReviewListAdapter(this);
         reviewListRecyclerView = (RecyclerView) findViewById(R.id.rv_review_list);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -145,29 +167,33 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
 
         // Setting the adapter attaches it to the RecyclerView in our layout.
         reviewListRecyclerView.setAdapter(reviewListAdapter);
-
     }
 
+    /**
+     * Builds a URL and calls webservice API to retrieve list of trailers.
+     */
     private void loadMovieTrailers() {
         URL trailersUrl = NetworkUtils.buildTrailersURL(mMovieDetail.getMovieId());
-        GetMovieTask movieTask = new GetMovieTask(null, this, "trailers");
+        GetMovieTask movieTask = new GetMovieTask(null, this, getString(R.string.trailers));
         movieTask.execute(trailersUrl);
     }
 
+    /**
+     * Builds a URL and calls webservice API to retrieve list of reviews.
+     */
     private void loadReviews() {
         URL reviewsUrl = NetworkUtils.buildReviewsURL(mMovieDetail.getMovieId());
-        GetMovieTask movieTask = new GetMovieTask(null, this, "reviews");
+        GetMovieTask movieTask = new GetMovieTask(null, this, getString(R.string.reviews));
         movieTask.execute(reviewsUrl);
     }
 
     @Override
     public void handleResponse(String response, String type) {
 
-        if(type.equals("trailers")) {
+        if(type.equals(getString(R.string.trailers))) {
             trailerList = AppUtils.createTrailerListFromResponse(response);
             trailerListAdapter.setTrailerList(trailerList);
-        } else if(type.equals("reviews")) {
-            Log.d("Reviews", response);
+        } else if(type.equals(getString(R.string.reviews))) {
             List<Review> reviewList = AppUtils.createReviewListFromResponse(response);
             reviewListAdapter.setReviewList(reviewList);
             if(reviewList.size() > 0) {
@@ -181,9 +207,11 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
     }
 
     @Override
-    public void onMovieItemClicked(int movieItemClickIndex) {
-        Trailer trailer = trailerList.get(movieItemClickIndex);
+    public void onItemClicked(int itemClickIndex) {
+        Trailer trailer = trailerList.get(itemClickIndex);
         if(trailer != null) {
+
+            // Create an implicit intent to view the movie trailer.
             Uri videoUri = Uri.parse(MOVIE_TRAILER_BASE_URI + trailer.getTrailerKey());
             Intent playVideoIntent = new Intent(Intent.ACTION_VIEW, videoUri);
             startActivity(playVideoIntent);
@@ -240,8 +268,12 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
         }
     }
 
+    /**
+     * Add movie to Favorites using Content Provider.
+     */
     private void addMovieToFavorites() {
-        Log.d("Movie overview", mMovieDetail.getOverView());
+
+        // Create a content values object to store details of the movie.
         ContentValues contentValues = new ContentValues();
         contentValues.put(FavoriteContract.FavoriteEntry.COLUMN_MOVIE_ID, mMovieDetail.getMovieId());
         contentValues.put(FavoriteContract.FavoriteEntry.COLUMN_TITLE, mMovieDetail.getTitle());
@@ -250,35 +282,55 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
         contentValues.put(FavoriteContract.FavoriteEntry.COLUMN_POSTER_URL, mMovieDetail.getPosterPath());
         contentValues.put(FavoriteContract.FavoriteEntry.COLUMN_RELEASE_DATE, mMovieDetail.getReleaseDate());
         contentValues.put(FavoriteContract.FavoriteEntry.COLUMN_VOTE_AVERAGE, mMovieDetail.getVoteAverage());
+
+        // getContentResolver to insert the movie details in the underlying database.
         Uri uri = getContentResolver().insert(FavoriteContract.FavoriteEntry.CONTENT_URI, contentValues);
+
         if (uri != null) {
+
+            // Addition to Favorites was successful.
             String toastMessage = getString(R.string.add_favorites_success);
             isFavorite = true;
             Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
             mFavoritesButton.setText(getString(R.string.remove_from_favorties));
         } else {
+
+            // Addition to Favorites failed.
             String toastMessage = getString(R.string.add_favorites_failed);
             Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
         }
     }
 
+    /**
+     * Remove the movie from favorites using movie Id.
+     */
     private void removeMovieFromFavorites() {
+
+        // Build Uri using movie Id and delete the movie item from the underlying database using content resolver.
         Uri uri = FavoriteContract.FavoriteEntry.CONTENT_URI.buildUpon().appendPath(Integer.toString(mMovieDetail.getMovieId())).build();
         int rowsDeleted = getContentResolver().delete(uri, null, null);
         if(rowsDeleted > 0) {
+
+            // Deletion was successful.
             isFavorite = false;
             String toastMessage = getString(R.string.remove_favorites_success);
             Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
             mFavoritesButton.setText(getString(R.string.add_to_favorites));
         } else {
+
+            // Deletion failed
             String toastMessage = getString(R.string.remove_favorites_failed);
             Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
         }
     }
 
+    /**
+     * Creates a share intent to share movie's first trailer URL.
+     */
     private void createShareIntent() {
+
         if(trailerList != null && trailerList.size() > 0) {
-            String mimeType = "text/plain";
+            String mimeType = getString(R.string.mimeType_to_share);
             String title = getString(R.string.share_title);
             String textToShare = Uri.parse(MOVIE_TRAILER_BASE_URI + trailerList.get(0).getTrailerKey()).toString();
             ShareCompat.IntentBuilder.from(this)

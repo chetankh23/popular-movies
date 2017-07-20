@@ -1,5 +1,9 @@
 package com.project.popularmovies.models;
 
+/**
+ * The class Review includes properties and methods to store the details
+ * of particular review.
+ */
 public class Review {
 
     private String author;
