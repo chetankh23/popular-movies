@@ -63,7 +63,7 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
     // Poster image URL of movie.
     private static final String MOVIE_IMAGE_BASE_URL = "http://image.tmdb.org/t/p/w185/";
 
-    // Movie trailer Base URL
+    // Movie trailer Base URL.
     private static final String MOVIE_TRAILER_BASE_URI = "https://www.youtube.com/watch?v=";
 
     @Override
