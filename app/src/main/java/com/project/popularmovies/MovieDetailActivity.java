@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -56,6 +55,8 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
     private TextView mNoReviewsTextView;
     private RecyclerView reviewListRecyclerView, trailerListRecyclerView;
     private FloatingActionButton shareFab;
+    private static final String IS_FAVORITE_KEY = "is_favorite";
+    private static final String MOVIE_DETAILS_KEY = "movie_detail";
 
     // Backdrop Image Base URL of movie.
     private static final String BACKDROP_BASE_URL = "http://image.tmdb.org/t/p/w780";
@@ -76,33 +77,57 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // Get intent from calling activity. If the intent is not null, we
-        // extract the details of movie using extras.
-        Intent getMovieIntent = getIntent();
-        if(getMovieIntent != null) {
+        if(savedInstanceState != null) {
+            isFavorite = savedInstanceState.getBoolean(IS_FAVORITE_KEY);
+            mMovieDetail = savedInstanceState.getParcelable(MOVIE_DETAILS_KEY);
+            init();
+        } else {
+            // Get intent from calling activity. If the intent is not null, we
+            // extract the details of movie using extras.
+            Intent getMovieIntent = getIntent();
+            if (getMovieIntent != null) {
 
-            // Get movie detail.
-            mMovieDetail = getMovieIntent.getParcelableExtra(getString(R.string.extra_movie_detail));
-            if(mMovieDetail != null) {
-                displayMovieDetails();
-
-                // initialize loader to load favorites.
-                getSupportLoaderManager().initLoader(FAVORITES_LOADER_ID, null, this);
-
-                // call to get movie trailers.
-                loadMovieTrailers();
-
-                // call to get movie reviews.
-                loadReviews();
+                // Get movie detail.
+                mMovieDetail = getMovieIntent.getParcelableExtra(getString(R.string.extra_movie_detail));
+                init();
             }
         }
     }
 
-    /*
-    * The method displayMovieDetails() displays the details of the movie such as Title,
-    * Release Date, Rating and Plot Synoposis of the movie.
-    */
-    private void displayMovieDetails() {
+    private void init() {
+
+        if (mMovieDetail != null) {
+            loadUiWithDetails();
+
+            // initialize loader to load favorites.
+            getSupportLoaderManager().initLoader(FAVORITES_LOADER_ID, null, this);
+
+            // call to get movie trailers.
+            loadMovieTrailers();
+
+            // call to get movie reviews.
+            loadReviews();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(IS_FAVORITE_KEY, isFavorite);
+        outState.putParcelable(MOVIE_DETAILS_KEY, mMovieDetail);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getSupportLoaderManager().restartLoader(FAVORITES_LOADER_ID, null, this);
+    }
+
+    /**
+     * The method loadUiWithDetails() displays the details of the movie such as Title,
+     * Release Date, Rating and Plot Synoposis of the movie.
+     */
+    private void loadUiWithDetails() {
         CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
         ImageView mMovieBackdropImageView = (ImageView) findViewById(R.id.iv_movie_backdrop_image);
         ImageView mMovieImageThumbnail = (ImageView) findViewById(R.id.iv_movie_thumbnail);
@@ -115,6 +140,8 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
         mFavoritesButton = (Button) findViewById(R.id.b_favorites);
         mFavoritesButton.setOnClickListener(this);
         shareFab.setOnClickListener(this);
+        createTrailerListUI();
+        createReviewListUI();
 
         collapsingToolbar.setTitle(mMovieDetail.getTitle());
         collapsingToolbar.setCollapsedTitleTextAppearance(R.style.coll_toolbar_title);
@@ -125,15 +152,14 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
         mMovieReleaseDate.setText(AppUtils.convertDateToCustomFormat(mMovieDetail.getReleaseDate()));
         mMovieRating.setText(mMovieDetail.getVoteAverage() + getString(R.string.out_of_rating));
         mMovieSynopsis.setText(mMovieDetail.getOverView());
-        initTrailerList();
-        initReviewList();
+
     }
 
     /**
      * Initializes the requisite UI to display list of trailers. This includes
      * initializing the RecyclerView, TrailerListAdapter and trailerList.
      */
-    private void initTrailerList() {
+    private void createTrailerListUI() {
 
         trailerList = new ArrayList<Trailer>();
 
@@ -153,7 +179,7 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
      * Initializes the requisite UI to display list of reviews. This includes
      * initializing the RecyclerView, ReviewListAdapter and reviewList.
      */
-    private void initReviewList() {
+    private void createReviewListUI() {
 
         reviewList = new ArrayList<Review>();
 
