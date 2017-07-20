@@ -1,7 +1,8 @@
 <resources>
-    <string name="app_name">Popular Movies</string>
+    <string name="app_name">Movie Tube</string>
     <string name="popular">Popular</string>
     <string name="top_rated">Top Rated</string>
+    <string name="favorites">Favorites</string>
     <string name="movie_detail">Movie Detail</string>
     <string name="api_popular">popular</string>
     <string name="api_top_rated">top_rated</string>
@@ -12,5 +13,12 @@
     <string name="reviews">Reviews</string>
     <string name="trailerImageFormat">/hqdefault.jpg</string>
     <string name="add_to_favorites">Add to Favorites</string>
+    <string name="add_favorites_success">Movie has been added to Favorites</string>
+    <string name="add_favorites_failed">Failed to add movie to Favorites</string>
     <string name="remove_from_favorties">Remove from Favorites</string>
+    <string name="remove_favorites_success">Movie has been removed from Favorites</string>
+    <string name="remove_favorites_failed">Failed to remove movie from Favorites</string>
+    <string name="no_reviews_found">No reviews found</string>
+    <string name="no_movies_found">No movies found</string>
+    <string name="share_title">Share Movie Trailer</string>
 </resources>

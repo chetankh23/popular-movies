@@ -34,9 +34,8 @@ public class AppUtils {
     private static final String CONTENT = "content";
     private static final String AUTHOR = "author";
 
-    public static List<Movie> createMovieDataFromResponse(String response) {
+    public static void createMovieDataFromResponse(List<Movie> movieList, String response) {
 
-        List<Movie> movieList = new ArrayList<Movie>();
         try {
             JSONObject responseObject = new JSONObject(response);
             int totalResults = responseObject.getInt(TOTAL_RESULTS);
@@ -57,7 +56,6 @@ public class AppUtils {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return movieList;
     }
 
     public static List<Trailer> createTrailerListFromResponse(String response) {

@@ -4,10 +4,23 @@
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/margin_large">
 
-    <ImageView
-        android:layout_width="170dp"
-        android:layout_height="130dp"
-        android:id="@+id/iv_trailer_thumbnail"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="170dp"
+            android:layout_height="130dp"
+            android:id="@+id/iv_trailer_thumbnail"/>
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@mipmap/ic_play"
+            android:background="@android:color/transparent"
+            android:layout_centerInParent="true"/>
+
+    </RelativeLayout>
 
     <TextView
         android:layout_width="170dp"

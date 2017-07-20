@@ -20,11 +20,13 @@ public class NetworkUtils {
     private static final String API_KEY = "api_key";
     private static final String VIDEOS = "videos";
     private static final String REVIEWS = "reviews";
+    private static final String PAGE = "page";
 
-    public static URL buildURL(String choice) {
+    public static URL buildURL(String choice, int pageOffset) {
         Uri builtUri = Uri.parse(BASE_URL).buildUpon()
                 .appendPath(choice)
                 .appendQueryParameter(API_KEY, BuildConfig.API_KEY)
+                .appendQueryParameter(PAGE, Integer.toString(pageOffset))
                 .build();
 
         URL url = null;

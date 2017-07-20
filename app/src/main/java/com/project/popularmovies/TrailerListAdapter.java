@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.project.popularmovies.interfaces.OnMovieItemClickListener;
 import com.project.popularmovies.models.Movie;
 import com.project.popularmovies.models.Trailer;
 import com.squareup.picasso.Picasso;
@@ -20,9 +21,11 @@ class TrailerListAdapter extends RecyclerView.Adapter<TrailerListAdapter.ImageVi
     private static final String TRAILER_IMAGE_BASE_URL = "http://img.youtube.com/vi/";
     private final Context mContext;
     private List<Trailer> mTrailerList;
+    private OnMovieItemClickListener onMovieItemClickListener;
 
-    public TrailerListAdapter(Context context) {
+    public TrailerListAdapter(Context context, OnMovieItemClickListener itemClickListener) {
         mContext = context;
+        onMovieItemClickListener = itemClickListener;
         mTrailerList = new ArrayList<Trailer>();
     }
 
@@ -50,7 +53,7 @@ class TrailerListAdapter extends RecyclerView.Adapter<TrailerListAdapter.ImageVi
         return mTrailerList.size();
     }
 
-    public class ImageViewHolder extends RecyclerView.ViewHolder {
+    public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         final ImageView trailerImageView;
         final TextView trailerNameTextView;
@@ -59,11 +62,18 @@ class TrailerListAdapter extends RecyclerView.Adapter<TrailerListAdapter.ImageVi
             super(itemView);
             trailerImageView = (ImageView) itemView.findViewById(R.id.iv_trailer_thumbnail);
             trailerNameTextView = (TextView) itemView.findViewById(R.id.tv_trailer_name);
+            itemView.setOnClickListener(this);
         }
 
         public void bind(String trailerImageUrl, String trailerName) {
             Picasso.with(mContext).load(TRAILER_IMAGE_BASE_URL+trailerImageUrl+mContext.getString(R.string.trailerImageFormat)).into(trailerImageView);
             trailerNameTextView.setText(trailerName);
+        }
+
+        @Override
+        public void onClick(View v) {
+            int position = getAdapterPosition();
+            onMovieItemClickListener.onMovieItemClicked(position);
         }
     }
 

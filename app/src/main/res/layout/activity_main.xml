@@ -9,10 +9,21 @@
         android:id="@+id/rv_movielist">
     </android.support.v7.widget.RecyclerView>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_no_movies"
+        android:text="@string/no_movies_found"
+        android:textSize="@dimen/textsize_extra_large"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textStyle="italic"
+        android:visibility="gone" />
+
     <ProgressBar
         android:id="@+id/pb_loading_indicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:visibility="invisible"/>
+        android:visibility="gone"/>
 </FrameLayout>

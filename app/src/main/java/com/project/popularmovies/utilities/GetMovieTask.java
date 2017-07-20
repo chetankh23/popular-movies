@@ -1,5 +1,7 @@
 package com.project.popularmovies.utilities;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -13,10 +15,21 @@ public class GetMovieTask extends AsyncTask<URL, Void, String> {
 
     private ResponseHandler mResponseHandler;
     private String mType;
+    private ProgressBar mLoadingIndicator;
 
-    public GetMovieTask(ResponseHandler responseHandler, String type) {
+    public GetMovieTask(ProgressBar loadingIndicator, ResponseHandler responseHandler, String type) {
+        mLoadingIndicator = loadingIndicator;
         mResponseHandler = responseHandler;
         mType = type;
+    }
+
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+
+        if(mLoadingIndicator != null)
+            mLoadingIndicator.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -33,6 +46,9 @@ public class GetMovieTask extends AsyncTask<URL, Void, String> {
 
     @Override
     protected void onPostExecute(String s) {
+        if(mLoadingIndicator != null && mLoadingIndicator.isShown())
+            mLoadingIndicator.setVisibility(View.GONE);
+
         if(s != null && !s.equals("")) {
             mResponseHandler.handleResponse(s, mType);
         }
