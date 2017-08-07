@@ -1,7 +1,10 @@
 package com.project.popularmovies;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +12,9 @@ import android.widget.ImageView;
 
 import com.project.popularmovies.interfaces.OnItemClickListener;
 import com.project.popularmovies.models.Movie;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +24,11 @@ import java.util.List;
  */
 public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.ImageViewHolder> {
 
-    private static final String MOVIE_IMAGE_BASE_URL = "http://image.tmdb.org/t/p/w342/";
+    private static final String LOG_TAG = MovieListAdapter.class.getSimpleName();
+
+    private static final String MOVIE_IMAGE_BASE_URL = "http://image.tmdb.org/t/p/w342";
     private final Context mContext;
+    final List<Target> mTargets = new ArrayList<Target>();
 
     // A list of movie objects.
     private List<Movie> mMovieList;
@@ -89,7 +97,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Imag
     /**
      * Cache of the children views for movie list item.
      */
-    public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         final ImageView mMovieImageView;
 
@@ -101,6 +109,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Imag
 
         public void bind(String imageURL) {
             String url = MOVIE_IMAGE_BASE_URL + imageURL;
+            Log.d(LOG_TAG, url);
             Picasso.with(mContext).load(url).into(mMovieImageView);
         }
 
@@ -114,6 +123,9 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Imag
             int itemClickIndex = getAdapterPosition();
             mOnMovieItemClickListener.onItemClicked(itemClickIndex);
         }
+
+
+
     }
 
     /**
@@ -126,4 +138,6 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Imag
         mMovieList = movieList;
         notifyDataSetChanged();
     }
+
+
 }

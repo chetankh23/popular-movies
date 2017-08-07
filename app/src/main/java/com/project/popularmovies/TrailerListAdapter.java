@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * The class TrailerListAdapter displays list of trailers for a particular movie.
  */
-class TrailerListAdapter extends RecyclerView.Adapter<TrailerListAdapter.ImageViewHolder> {
+public class TrailerListAdapter extends RecyclerView.Adapter<TrailerListAdapter.ImageViewHolder> {
 
     private static final String TRAILER_IMAGE_BASE_URL = "http://img.youtube.com/vi/";
     private final Context mContext;

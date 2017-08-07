@@ -3,6 +3,7 @@ package com.project.popularmovies;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -22,6 +23,8 @@ import android.widget.Toast;
 
 import com.project.popularmovies.data.FavoriteContract;
 import com.project.popularmovies.data.FavoritesCursor;
+import com.project.popularmovies.databinding.ActivityMovieDetailBinding;
+import com.project.popularmovies.fragments.MovieDetailFragment;
 import com.project.popularmovies.interfaces.OnItemClickListener;
 import com.project.popularmovies.interfaces.ResponseHandler;
 import com.project.popularmovies.models.Movie;
@@ -43,18 +46,12 @@ import java.util.List;
 public class MovieDetailActivity extends AppCompatActivity implements ResponseHandler, View.OnClickListener, OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     private Movie mMovieDetail;
-    private Toolbar toolbar;
-    private CollapsingToolbarLayout collapsingToolbar;
     private TrailerListAdapter trailerListAdapter;
     private ReviewListAdapter reviewListAdapter;
     private List<Trailer> trailerList;
     private List<Review> reviewList;
-    private Button mFavoritesButton;
     private static int FAVORITES_LOADER_ID = 1;
     private boolean isFavorite;
-    private TextView mNoReviewsTextView;
-    private RecyclerView reviewListRecyclerView, trailerListRecyclerView;
-    private FloatingActionButton shareFab;
     private static final String IS_FAVORITE_KEY = "is_favorite";
     private static final String MOVIE_DETAILS_KEY = "movie_detail";
 
@@ -67,13 +64,22 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
     // Movie trailer Base URL.
     private static final String MOVIE_TRAILER_BASE_URI = "https://www.youtube.com/watch?v=";
 
+    ActivityMovieDetailBinding mBinding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_detail);
+        setContentView(R.layout.movie_detail_container);
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        if(getIntent() != null) {
+            Bundle extras = getIntent().getExtras();
+            mMovieDetail = extras.getParcelable(getString(R.string.extra_movie_detail));
+            MovieDetailFragment movieDetailFragment = new MovieDetailFragment();
+            movieDetailFragment.setmMovieDetail(mMovieDetail);
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, movieDetailFragment).commit();
+        }
+        /*mBinding = DataBindingUtil.setContentView(this, R.layout.activity_movie_detail);
+        setSupportActionBar(mBinding.toolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -91,7 +97,7 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
                 mMovieDetail = getMovieIntent.getParcelableExtra(getString(R.string.extra_movie_detail));
                 init();
             }
-        }
+        }*/
     }
 
     private void init() {
@@ -128,31 +134,21 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
      * Release Date, Rating and Plot Synoposis of the movie.
      */
     private void loadUiWithDetails() {
-        CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
-        ImageView mMovieBackdropImageView = (ImageView) findViewById(R.id.iv_movie_backdrop_image);
-        ImageView mMovieImageThumbnail = (ImageView) findViewById(R.id.iv_movie_thumbnail);
-        TextView mMovieTitle = (TextView) findViewById(R.id.tv_movie_title);
-        TextView mMovieReleaseDate = (TextView) findViewById(R.id.tv_release_date);
-        TextView mMovieRating = (TextView) findViewById(R.id.tv_movie_rating);
-        TextView mMovieSynopsis = (TextView) findViewById(R.id.tv_movie_synopsis);
-        shareFab = (FloatingActionButton) findViewById(R.id.fab_share);
-        mNoReviewsTextView = (TextView) findViewById(R.id.tv_no_reviews);
-        mFavoritesButton = (Button) findViewById(R.id.b_favorites);
-        mFavoritesButton.setOnClickListener(this);
-        shareFab.setOnClickListener(this);
+
+        mBinding.movieInfoLayout.bFavorites.setOnClickListener(this);
+        mBinding.fabShare.setOnClickListener(this);
         createTrailerListUI();
         createReviewListUI();
 
-        collapsingToolbar.setTitle(mMovieDetail.getTitle());
-        collapsingToolbar.setCollapsedTitleTextAppearance(R.style.coll_toolbar_title);
-        collapsingToolbar.setExpandedTitleTextAppearance(R.style.exp_toolbar_title);
-        Picasso.with(this).load(BACKDROP_BASE_URL + mMovieDetail.getBackdropPath()).into(mMovieBackdropImageView);
-        Picasso.with(this).load(MOVIE_IMAGE_BASE_URL + mMovieDetail.getPosterPath()).into(mMovieImageThumbnail);
-        mMovieTitle.setText(mMovieDetail.getTitle());
-        mMovieReleaseDate.setText(AppUtils.convertDateToCustomFormat(mMovieDetail.getReleaseDate()));
-        mMovieRating.setText(mMovieDetail.getVoteAverage() + getString(R.string.out_of_rating));
-        mMovieSynopsis.setText(mMovieDetail.getOverView());
-
+        mBinding.collapsingToolbar.setTitle(mMovieDetail.getTitle());
+        mBinding.collapsingToolbar.setCollapsedTitleTextAppearance(R.style.coll_toolbar_title);
+        mBinding.collapsingToolbar.setExpandedTitleTextAppearance(R.style.exp_toolbar_title);
+        Picasso.with(this).load(BACKDROP_BASE_URL + mMovieDetail.getBackdropPath()).into(mBinding.ivMovieBackdropImage);
+        Picasso.with(this).load(MOVIE_IMAGE_BASE_URL + mMovieDetail.getPosterPath()).into(mBinding.movieInfoLayout.ivMovieThumbnail);
+        mBinding.movieInfoLayout.tvMovieTitle.setText(mMovieDetail.getTitle());
+        mBinding.movieInfoLayout.tvReleaseDate.setText(AppUtils.convertDateToCustomFormat(mMovieDetail.getReleaseDate()));
+        mBinding.movieInfoLayout.tvMovieRating.setText(mMovieDetail.getVoteAverage() + getString(R.string.out_of_rating));
+        mBinding.movieInfoLayout.tvMovieSynopsis.setText(mMovieDetail.getOverView());
     }
 
     /**
@@ -166,13 +162,12 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
         // The TrailerListAdapter is responsible for linking the trailer data with the views
         // that will end up displaying the trailer data.
         trailerListAdapter = new TrailerListAdapter(this, this);
-        trailerListRecyclerView = (RecyclerView) findViewById(R.id.rv_trailer_list);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        trailerListRecyclerView.setLayoutManager(layoutManager);
-        trailerListRecyclerView.setHasFixedSize(true);
+        mBinding.movieInfoLayout.rvTrailerList.setLayoutManager(layoutManager);
+        mBinding.movieInfoLayout.rvTrailerList.setHasFixedSize(true);
 
         // Setting the adapter attaches it to the RecyclerView in our layout.
-        trailerListRecyclerView.setAdapter(trailerListAdapter);
+        mBinding.movieInfoLayout.rvTrailerList.setAdapter(trailerListAdapter);
     }
 
     /**
@@ -186,13 +181,12 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
         // The ReviewListAdapter is responsible for linking the review data with the views
         // that will end up displaying the review data.
         reviewListAdapter = new ReviewListAdapter(this);
-        reviewListRecyclerView = (RecyclerView) findViewById(R.id.rv_review_list);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        reviewListRecyclerView.setLayoutManager(layoutManager);
-        reviewListRecyclerView.setHasFixedSize(true);
+        mBinding.movieInfoLayout.rvReviewList.setLayoutManager(layoutManager);
+        mBinding.movieInfoLayout.rvReviewList.setHasFixedSize(true);
 
         // Setting the adapter attaches it to the RecyclerView in our layout.
-        reviewListRecyclerView.setAdapter(reviewListAdapter);
+        mBinding.movieInfoLayout.rvReviewList.setAdapter(reviewListAdapter);
     }
 
     /**
@@ -223,11 +217,11 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
             List<Review> reviewList = AppUtils.createReviewListFromResponse(response);
             reviewListAdapter.setReviewList(reviewList);
             if(reviewList.size() > 0) {
-                mNoReviewsTextView.setVisibility(View.GONE);
-                reviewListRecyclerView.setVisibility(View.VISIBLE);
+                mBinding.movieInfoLayout.tvNoReviews.setVisibility(View.GONE);
+                mBinding.movieInfoLayout.rvReviewList.setVisibility(View.VISIBLE);
             } else {
-                mNoReviewsTextView.setVisibility(View.VISIBLE);
-                reviewListRecyclerView.setVisibility(View.GONE);
+                mBinding.movieInfoLayout.tvNoReviews.setVisibility(View.VISIBLE);
+                mBinding.movieInfoLayout.rvReviewList.setVisibility(View.GONE);
             }
         }
     }
@@ -253,11 +247,11 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if(isMovieFavorite(data)) {
             isFavorite = true;
-            mFavoritesButton.setText(getString(R.string.remove_from_favorties));
+            mBinding.movieInfoLayout.bFavorites.setText(getString(R.string.remove_from_favorties));
         }
         else {
             isFavorite = false;
-            mFavoritesButton.setText(getString(R.string.add_to_favorites));
+            //mBinding.movieInfoLayout.bFavorites.setText(getString(R.string.add_to_favorites));
         }
     }
 
@@ -318,7 +312,7 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
             String toastMessage = getString(R.string.add_favorites_success);
             isFavorite = true;
             Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
-            mFavoritesButton.setText(getString(R.string.remove_from_favorties));
+            mBinding.movieInfoLayout.bFavorites.setText(getString(R.string.remove_from_favorties));
         } else {
 
             // Addition to Favorites failed.
@@ -341,7 +335,7 @@ public class MovieDetailActivity extends AppCompatActivity implements ResponseHa
             isFavorite = false;
             String toastMessage = getString(R.string.remove_favorites_success);
             Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
-            mFavoritesButton.setText(getString(R.string.add_to_favorites));
+            mBinding.movieInfoLayout.bFavorites.setText(getString(R.string.add_to_favorites));
         } else {
 
             // Deletion failed

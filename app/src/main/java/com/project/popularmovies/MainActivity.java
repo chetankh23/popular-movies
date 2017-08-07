@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
@@ -16,9 +18,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.project.popularmovies.data.FavoriteContract;
 import com.project.popularmovies.data.FavoritesCursor;
+import com.project.popularmovies.fragments.MovieDetailFragment;
+import com.project.popularmovies.fragments.MovieListFragment;
 import com.project.popularmovies.interfaces.OnItemClickListener;
 import com.project.popularmovies.interfaces.ResponseHandler;
 import com.project.popularmovies.models.Movie;
@@ -34,7 +39,7 @@ import java.util.ArrayList;
 * application. It displays a list of movies in a grid using a Recycler View. The activity
 * also has option menu for user to choose and display top rated movies.
 */
-public class MainActivity extends AppCompatActivity implements ResponseHandler, OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class MainActivity extends FragmentActivity implements MovieListFragment.OnMovieItemSelectedListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     private ArrayList<Movie> movieList;
     private MovieListAdapter movieListAdapter;
@@ -51,9 +56,14 @@ public class MainActivity extends AppCompatActivity implements ResponseHandler, 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.movie_detail_container);
 
-        initUI();
+        movieList = new ArrayList<Movie>();
+        MovieListFragment movieListFragment = new MovieListFragment();
+        movieListFragment.setmMovieList(movieList);
+        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, movieListFragment).commit();
+        //movieListFragment.getMovieList();
+        //initUI();
 
         /**
          * Check if the savedInstanceState is null. If savedInstanceState is not null, the
@@ -61,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements ResponseHandler, 
          * page offset and movie list from bundle using their appropriate keys. Accordingly,
          * we set our MovieListAdapter and page offset.
          */
-        if(savedInstanceState != null) {
+        /*if(savedInstanceState != null) {
             String categoryChoice = readFromPreferences();
             setActionBarTitle(categoryChoice);
             pageOffset = savedInstanceState.getInt(PAGE_OFFSET_KEY);
@@ -72,45 +82,8 @@ public class MainActivity extends AppCompatActivity implements ResponseHandler, 
             setActionBarTitle(getString(R.string.popular));
             movieList = new ArrayList<Movie>();
             getMovieList();
-        }
+        }*/
     }
-
-    /**
-     * The method initUI() initializes the Recycler View and attaches a List Adapter to it.
-     */
-    private void initUI() {
-
-        // The MovieListAdapter is responsible for linking the movie data with the views
-        // that will end up displaying the movie data.
-        movieListAdapter = new MovieListAdapter(this, this);
-
-        // Progress Bar to indicate the user that data is being loaded.
-        mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
-
-        mNoMoviesFoundTextView = (TextView) findViewById(R.id.tv_no_movies);
-        movieListRecyclerView = (RecyclerView) findViewById(R.id.rv_movielist);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
-        movieListRecyclerView.setLayoutManager(gridLayoutManager);
-        movieListRecyclerView.setHasFixedSize(true);
-
-        /**
-         * When user scrolls to the end of the list, we need to load more data. So,
-         * a web service APi is called when the user scrolls down to end of the list.
-         */
-        scrollListener = new EndlessRecyclerViewScrollListener(gridLayoutManager) {
-            @Override
-            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                String categoryChoice = readFromPreferences();
-                if(!categoryChoice.equals(getString(R.string.favorites)))
-                    getMovieList();
-            }
-        };
-
-        // Setting the adapter attaches it to the RecyclerView in our layout.
-        movieListRecyclerView.setAdapter(movieListAdapter);
-        movieListRecyclerView.addOnScrollListener(scrollListener);
-    }
-
 
     /**
      * The onResume() method is called when this activity is visible and has focus.
@@ -121,35 +94,11 @@ public class MainActivity extends AppCompatActivity implements ResponseHandler, 
 
         // Read SharedPreferences and if the resumed activity is Favorites list,
         // we update the list.
-        String categoryChoice = readFromPreferences();
-        if(categoryChoice.equals(getString(R.string.favorites)))
-            getSupportLoaderManager().restartLoader(FAVORITES_LOADER_ID, null, this);
+        //String categoryChoice = readFromPreferences();
+        //if(categoryChoice.equals(getString(R.string.favorites)))
+          //  getSupportLoaderManager().restartLoader(FAVORITES_LOADER_ID, null, this);
     }
 
-    /**
-     * We save the category selected by user to our SharedPreferences file. The category
-     * can be one amongst Popular, Top Rated or Favorites.
-     *
-     * @param categoryChoice Category choice selected by user.
-     */
-    private void saveToSharedPreferences(String categoryChoice) {
-        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(CATEGORY_CHOICE_KEY, categoryChoice);
-        editor.commit();
-    }
-
-    /**
-     * Read from SharedPreferences file and return the chosen category to display
-     * movie list.
-     *
-     * @return String, category chosen by user.
-     */
-    private String readFromPreferences() {
-        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
-        String categoryChoice = sharedPreferences.getString(CATEGORY_CHOICE_KEY, getString(R.string.popular));
-        return categoryChoice;
-    }
 
     /**
      * The onSaveInstanceState() is called when the activity is about to lose focus
@@ -165,22 +114,6 @@ public class MainActivity extends AppCompatActivity implements ResponseHandler, 
 
     }
 
-    /**
-     * The method will get user's choice to display list of movies and then tell some
-     * background method to fetch the data in the background.
-     *
-     */
-    private void getMovieList() {
-        String apiToCall = "";
-        String categoryChoice = readFromPreferences();
-        if(categoryChoice.equals(getString(R.string.popular)))
-            apiToCall = getString(R.string.api_popular);
-        else if(categoryChoice.equals(getString(R.string.top_rated)))
-            apiToCall = getString(R.string.api_top_rated);
-        URL url = NetworkUtils.buildURL(apiToCall, pageOffset++);
-        GetMovieTask movieTask = new GetMovieTask(mLoadingIndicator, this, null);
-        movieTask.execute(url);
-    }
 
 
     @Override
@@ -199,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements ResponseHandler, 
      *
      * @return boolean to inflate the menu items.
      */
+    /*
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         String categoryChoice = readFromPreferences();
@@ -247,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements ResponseHandler, 
         }
         return super.onOptionsItemSelected(item);
     }
-
+*/
     /**
      * Refresh the movie list with new data. This method is invoked when user
      * chooses new category from options menu to display the movie list. In this
@@ -257,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements ResponseHandler, 
     private void refreshListWithNewData() {
         movieList.clear();
         pageOffset = 1;
-        getMovieList();
+        //getMovieList();
     }
 
 
@@ -267,39 +201,11 @@ public class MainActivity extends AppCompatActivity implements ResponseHandler, 
      * @param title Action Bar Title to display.
      */
     private void setActionBarTitle(String title) {
-        ActionBar actionBar = getSupportActionBar();
-        if(actionBar != null)
-            actionBar.setTitle(title);
+       // ActionBar actionBar = getSupportActionBar();
+        //if(actionBar != null)
+          //  actionBar.setTitle(title);
     }
 
-    /**
-     * The method handleResponse() handles the web service response by parsing
-     * it and accordingly update the data used for the adapter.
-     *
-     * @param response Response obtained from the web service call.
-     */
-    @Override
-    public void handleResponse(String response, String type) {
-        AppUtils.createMovieDataFromResponse(movieList, response);
-        displayResults();
-    }
-
-    /**
-     * The method onItemClicked() is invoked when user clicks any particular movie list
-     * item. It navigates the user to the MovieDetailActivity to show the details of
-     * the selected movie. The movie object is wrapped in the intent and sent to the
-     * MovieDetailActivity class.
-     *
-     * @param itemClickIndex The index of the item which was clicked.
-     *
-     */
-    @Override
-    public void onItemClicked(int itemClickIndex) {
-        Movie selectedMovie = movieList.get(itemClickIndex);
-        Intent movieDetailIntent = new Intent(MainActivity.this, MovieDetailActivity.class);
-        movieDetailIntent.putExtra(getString(R.string.extra_movie_detail), selectedMovie);
-        startActivity(movieDetailIntent);
-    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -341,21 +247,17 @@ public class MainActivity extends AppCompatActivity implements ResponseHandler, 
             movie.setVoteAverage(cursor.getDouble(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_VOTE_AVERAGE)));
             movieList.add(movie);
         }
-        displayResults();
+        //displayResults();
     }
 
-    /**
-     * Displays either the list of movies by making the RecyclerView visible
-     * or displays a simple text view with an info message if the movie list is empty.
-     */
-    private void displayResults() {
-        movieListAdapter.setmMovieList(movieList);
-        if(movieList.size() > 0) {
-            movieListRecyclerView.setVisibility(View.VISIBLE);
-            mNoMoviesFoundTextView.setVisibility(View.GONE);
-        } else {
-            movieListRecyclerView.setVisibility(View.GONE);
-            mNoMoviesFoundTextView.setVisibility(View.VISIBLE);
-        }
+    @Override
+    public void onMovieItemSelected(int position) {
+        Toast.makeText(this, "Movie item selected", Toast.LENGTH_SHORT).show();
+        Movie movie = movieList.get(position);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(getString(R.string.extra_movie_detail), movie);
+        Intent intent = new Intent(this, MovieDetailActivity.class);
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 }
